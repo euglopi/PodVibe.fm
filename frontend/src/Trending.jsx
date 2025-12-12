@@ -4,7 +4,7 @@ import axios from 'axios';
 import './Trending.css';
 
 const Trending = ({ onVideoSelect }) => {
-  const MIN_PODCAST_SECONDS = 60 * 60;
+  const MIN_PODCAST_SECONDS = 60;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,13 +65,13 @@ const Trending = ({ onVideoSelect }) => {
     );
   };
 
-  const isPodcastTagged = (video) => {
-    if (!video) return false;
-    if (video.isPodcast === true) return true;
+  // const isPodcastTagged = (video) => {
+  //   if (!video) return false;
+  //   if (video.isPodcast === true) return true;
 
-    const haystack = `${video.title || ''} ${video.description || ''} ${video.channel || ''}`.toLowerCase();
-    return haystack.includes('podcast') || haystack.includes('#podcast') || haystack.includes('#podcasts');
-  };
+  //   const haystack = `${video.title || ''} ${video.description || ''} ${video.channel || ''}`.toLowerCase();
+  //   return haystack.includes('podcast') || haystack.includes('#podcast') || haystack.includes('#podcasts');
+  // };
 
   useEffect(() => {
     fetchTrendingPodcasts();
@@ -173,7 +173,7 @@ const Trending = ({ onVideoSelect }) => {
         {categories.map(([categoryId, categoryData], categoryIndex) => {
           const filteredVideos = (categoryData?.videos || []).filter((video) => {
             const durationSeconds = getDurationSeconds(video);
-            return durationSeconds >= MIN_PODCAST_SECONDS && isPodcastTagged(video);
+            return durationSeconds >= MIN_PODCAST_SECONDS;
           });
 
           return (
