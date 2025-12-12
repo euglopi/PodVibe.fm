@@ -187,6 +187,7 @@ class YouTubeSummarizer:
             'video_id': execution_context.get('video_id'),
             'url': url,
             'transcript': execution_context.get('transcript'),
+            'transcript_segments': execution_context.get('transcript_segments', []),  # Store segments with timestamps
             'transcript_length': len(execution_context.get('transcript', '')),
             'segments': execution_context.get('segments', 0),
             'summary': execution_context.get('summary'),
@@ -253,6 +254,31 @@ class YouTubeSummarizer:
             Path to exported file
         """
         return self.memory.export_memory(filepath)
+    
+    def find_keyword_timestamp(self, video_id: str, keyword: str, transcript_segments: List[Dict]) -> float:
+        """
+        Find the timestamp where a keyword is discussed in the transcript
+        
+        Args:
+            video_id: YouTube video ID
+            keyword: Keyword to search for
+            transcript_segments: List of transcript segments with timestamps
+            
+        Returns:
+            Timestamp in seconds, or -1 if not found
+        """
+        task = {'action': 'find_keyword_timestamp', 'tool': 'keyword_timestamp_finder'}
+        context = {
+            'keyword': keyword,
+            'video_id': video_id,
+            'transcript_segments': transcript_segments
+        }
+        result = self.executor.execute_task(task, context)
+        
+        if result['status'] == 'success':
+            return result['result'].get('timestamp', -1)
+        else:
+            raise Exception(f"Failed to find keyword timestamp: {result.get('error')}")
 
 
 def main():

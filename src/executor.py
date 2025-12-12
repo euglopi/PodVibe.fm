@@ -4,6 +4,7 @@ Part of the PodVibe.fm Agentic AI System
 """
 
 import os
+import re
 import google.generativeai as genai
 from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
@@ -42,7 +43,8 @@ class Executor:
             'youtube_api': self.fetch_transcript,
             'gemini_api': self.generate_summary,
             'keyword_extractor': self.extract_keywords,
-            'memory_store': self.store_result
+            'memory_store': self.store_result,
+            'keyword_timestamp_finder': self.find_keyword_timestamp
         }
     
     def execute_task(self, task: Dict, context: Dict = None) -> Dict:
@@ -144,8 +146,19 @@ class Executor:
             # Extract text from all snippets
             transcript_text = ' '.join([snippet.text for snippet in transcript.snippets])
             
+            # Store transcript segments with timestamps for later use
+            transcript_segments = [
+                {
+                    'text': snippet.text,
+                    'start': snippet.start,
+                    'duration': snippet.duration
+                }
+                for snippet in transcript.snippets
+            ]
+            
             return {
                 'transcript': transcript_text,
+                'transcript_segments': transcript_segments,  # Store segments with timestamps
                 'length': len(transcript_text),
                 'segments': len(transcript.snippets),
                 'video_id': video_id,
@@ -154,6 +167,103 @@ class Executor:
         
         except Exception as e:
             raise Exception(f"Failed to fetch transcript: {str(e)}")
+    
+    def find_keyword_timestamp(self, task: Dict, context: Dict) -> Dict:
+        """
+        Tool: Find the timestamp in transcript where a keyword is discussed using Gemini API
+        
+        Args:
+            task: Task details
+            context: Contains 'keyword', 'transcript_segments', and 'video_id'
+            
+        Returns:
+            Dictionary with timestamp in seconds
+        """
+        keyword = context.get('keyword')
+        transcript_segments = context.get('transcript_segments', [])
+        video_id = context.get('video_id')
+        
+        if not keyword:
+            raise ValueError("No keyword provided")
+        
+        if not transcript_segments:
+            raise ValueError("No transcript segments provided")
+        
+        # Build transcript with timestamps for Gemini
+        transcript_with_timestamps = "\n".join([
+            f"[{seg['start']:.2f}s] {seg['text']}"
+            for seg in transcript_segments
+        ])
+        
+        # Prompt for Gemini to find the relevant timestamp
+        # Limit transcript length to avoid token limits (take first 5000 segments or ~100k chars)
+        max_segments = min(5000, len(transcript_segments))
+        limited_segments = transcript_segments[:max_segments]
+        limited_transcript = "\n".join([
+            f"[{seg['start']:.2f}s] {seg['text']}"
+            for seg in limited_segments
+        ])
+        
+        prompt = f"""You are analyzing a YouTube video transcript to find where a specific keyword, topic, or concept is discussed.
+
+Keyword/Topic/Concept: "{keyword}"
+
+IMPORTANT: The keyword might be:
+- A direct word or phrase mentioned in the transcript
+- A concept or theme that is discussed without using the exact words
+- An idea that is described or explained
+
+Transcript with timestamps (showing first {max_segments} segments):
+{limited_transcript}
+
+Your task:
+1. Search for where this keyword/topic/concept is meaningfully discussed
+2. Look for:
+   - Exact mentions of the keyword or its variations
+   - Discussions of the concept even if different words are used
+   - Related themes or ideas that match the keyword's meaning
+3. Find the FIRST occurrence where this topic is discussed in detail
+4. Return ONLY the timestamp in seconds as a number (e.g., 123.45)
+5. If the keyword appears multiple times, return the timestamp of the most relevant/important discussion
+6. If you truly cannot find any relevant discussion, return -1
+
+Return ONLY the timestamp number (no explanation, no text, just the number):"""
+        
+        try:
+            # Call Gemini API
+            response = self.gemini_model.generate_content(prompt)
+            timestamp_text = response.text.strip()
+            
+            print(f"🔍 Gemini response for keyword '{keyword}': {timestamp_text[:200]}")
+            
+            # Extract numeric timestamp
+            try:
+                # Try to extract number from response
+                numbers = re.findall(r'\d+\.?\d*', timestamp_text)
+                if numbers:
+                    timestamp = float(numbers[0])
+                    print(f"✅ Extracted timestamp: {timestamp}s for keyword '{keyword}'")
+                else:
+                    print(f"⚠️ No numbers found in response for keyword '{keyword}'")
+                    timestamp = -1
+            except Exception as e:
+                print(f"⚠️ Error extracting timestamp: {str(e)}")
+                timestamp = -1
+            
+            return {
+                'keyword': keyword,
+                'timestamp': timestamp,
+                'video_id': video_id,
+                'tool_used': 'gemini_api',
+                'model': 'gemini-2.5-flash',
+                'raw_response': timestamp_text[:200]  # Store first 200 chars for debugging
+            }
+        
+        except Exception as e:
+            print(f"❌ Error in find_keyword_timestamp for keyword '{keyword}': {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise Exception(f"Failed to find keyword timestamp: {str(e)}")
     
     def generate_summary(self, task: Dict, context: Dict) -> Dict:
         """

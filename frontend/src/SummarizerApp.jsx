@@ -11,6 +11,8 @@ function App() {
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(null);
   const [currentPage, setCurrentPage] = useState('trending'); // 'trending' or 'summarizer'
+  const [seekingKeyword, setSeekingKeyword] = useState(null);
+  const [videoStartTime, setVideoStartTime] = useState(null);
 
   const getYouTubeVideoId = (inputUrl) => {
     if (!inputUrl) return null;
@@ -109,6 +111,43 @@ function App() {
     link.click();
   };
 
+  const handleKeywordClick = async (keyword) => {
+    if (!result || !result.video_id) return;
+    
+    setSeekingKeyword(keyword);
+    
+    try {
+      // Call API to find timestamp
+      const response = await axios.post('/api/find-timestamp', {
+        video_id: result.video_id,
+        keyword: keyword
+      });
+      
+      if (response.data.success && response.data.timestamp >= 0) {
+        const timestamp = response.data.timestamp;
+        
+        // Update video start time to seek to the timestamp
+        // The iframe will re-render with the new start parameter
+        setVideoStartTime(timestamp);
+        
+        // Scroll to video player
+        const playerSection = document.querySelector('.player-section');
+        if (playerSection) {
+          playerSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else {
+        setError(`Could not find discussion of "${keyword}" in this video.`);
+        setTimeout(() => setError(null), 5000);
+      }
+    } catch (err) {
+      console.error('Error finding timestamp:', err);
+      setError(`Failed to find timestamp for "${keyword}". Please try again.`);
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setSeekingKeyword(null);
+    }
+  };
+
   return (
     <div className="app">
       {/* Navigation Bar */}
@@ -169,8 +208,9 @@ function App() {
                 {getYouTubeVideoId(url) ? (
                   <div className="player-wrapper" style={{ position: 'relative', paddingTop: '56.25%' }}>
                     <iframe
+                      key={videoStartTime || 'default'} // Force re-render when start time changes
                       title="YouTube player"
-                      src={`https://www.youtube.com/embed/${getYouTubeVideoId(url)}?autoplay=1&mute=1&playsinline=1&rel=0`}
+                      src={`https://www.youtube.com/embed/${getYouTubeVideoId(url)}?autoplay=1&mute=0&playsinline=1&rel=0${videoStartTime ? `&start=${Math.floor(videoStartTime)}` : ''}`}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
                       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
@@ -257,10 +297,30 @@ function App() {
                     {result.keywords && result.keywords.length > 0 && (
                       <div className="keywords-section">
                         <h3>🏷️ Semantic Keywords</h3>
+                        <p style={{ fontSize: '0.9em', color: '#888', marginBottom: '12px' }}>
+                          Click any keyword to jump to that part of the video
+                        </p>
                         <div className="keywords-container">
                           {result.keywords.map((keyword, index) => (
-                            <span key={index} className="keyword-tag">
-                              {keyword}
+                            <span 
+                              key={index} 
+                              className="keyword-tag"
+                              onClick={() => handleKeywordClick(keyword)}
+                              style={{
+                                cursor: seekingKeyword === keyword ? 'wait' : 'pointer',
+                                opacity: seekingKeyword === keyword ? 0.6 : 1,
+                                transition: 'all 0.2s ease'
+                              }}
+                              title={`Click to jump to discussion of "${keyword}"`}
+                            >
+                              {seekingKeyword === keyword ? (
+                                <>
+                                  <Loader2 className="icon-spin" style={{ width: '14px', height: '14px', marginRight: '4px', display: 'inline-block' }} />
+                                  {keyword}
+                                </>
+                              ) : (
+                                keyword
+                              )}
                             </span>
                           ))}
                         </div>

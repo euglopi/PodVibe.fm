@@ -148,6 +148,86 @@ def get_trending():
     return get_trending_podcasts_route()
 
 
+@app.route('/api/find-timestamp', methods=['POST'])
+def find_keyword_timestamp():
+    """
+    Find the timestamp where a keyword is discussed in a video
+    
+    Request JSON:
+        {
+            "video_id": "...",
+            "keyword": "..."
+        }
+    
+    Response JSON:
+        {
+            "success": true,
+            "timestamp": 123.45,  // in seconds, or -1 if not found
+            "keyword": "..."
+        }
+    """
+    try:
+        data = request.get_json()
+        video_id = data.get('video_id', '').strip()
+        keyword = data.get('keyword', '').strip()
+        
+        if not video_id:
+            return jsonify({
+                'success': False,
+                'error': 'video_id is required'
+            }), 400
+        
+        if not keyword:
+            return jsonify({
+                'success': False,
+                'error': 'keyword is required'
+            }), 400
+        
+        # Get summarizer instance
+        summ = get_summarizer()
+        
+        # Fetch transcript with timestamps
+        try:
+            transcript_result = summ.executor.fetch_transcript(
+                {'action': 'fetch_transcript', 'tool': 'youtube_api'},
+                {'video_id': video_id}
+            )
+            
+            # fetch_transcript returns the dict directly, not wrapped in status
+            transcript_segments = transcript_result.get('transcript_segments', [])
+            
+            if not transcript_segments:
+                return jsonify({
+                    'success': False,
+                    'error': 'No transcript segments found'
+                }), 500
+            
+            # Find timestamp using Gemini
+            timestamp = summ.find_keyword_timestamp(video_id, keyword, transcript_segments)
+        except Exception as e:
+            print(f"❌ Error in find_keyword_timestamp endpoint: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'success': False,
+                'error': f'Failed to process request: {str(e)}'
+            }), 500
+        
+        return jsonify({
+            'success': True,
+            'timestamp': timestamp,
+            'keyword': keyword,
+            'video_id': video_id
+        }), 200
+    
+    except Exception as e:
+        print(f"❌ Error finding timestamp: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
 if __name__ == '__main__':
     print("🚀 Starting PodVibe.fm API...")
     print("📡 React frontend should connect to: http://localhost:8000")
