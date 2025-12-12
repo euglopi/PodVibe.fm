@@ -1,6 +1,7 @@
 .trending-container {
   width: 100%;
-  max-width: 1400px;
+  /* Match the app container width so content visually centers under the nav */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
