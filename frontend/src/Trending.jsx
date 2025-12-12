@@ -18,22 +18,22 @@ const Trending = ({ onVideoSelect }) => {
 
     try {
       const response = await axios.get('/api/trending');
-      
+
       if (response.data.success) {
         setTrendingData(response.data.categories);
       } else {
-        setError('Failed to load trending podcasts');
+        setError('Failed to load trending videos');
       }
     } catch (err) {
       console.error('Error fetching trending:', err);
-      let errorMessage = 'Failed to load trending podcasts';
-      
+      let errorMessage = 'Failed to load trending videos';
+
       if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
         errorMessage = 'Cannot connect to API server. Make sure the Flask API is running on http://localhost:8000';
       } else if (err.response) {
         errorMessage = err.response.data?.error || `Server error: ${err.response.status}`;
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -51,14 +51,14 @@ const Trending = ({ onVideoSelect }) => {
         <div className="trending-header">
           <div className="header-title">
             <TrendingUp size={32} />
-            <h1>Trending Podcasts</h1>
+            <h1>trending videos</h1>
           </div>
           <p className="subtitle">Powered by Gemini Search 🤖</p>
         </div>
 
         <div className="loading-state">
           <Loader2 className="spinner" size={48} />
-          <p>Discovering trending podcasts with AI...</p>
+          <p>Discovering trending videos with AI...</p>
           <p className="loading-detail">This may take a moment as we search YouTube</p>
         </div>
       </div>
@@ -71,7 +71,7 @@ const Trending = ({ onVideoSelect }) => {
         <div className="trending-header">
           <div className="header-title">
             <TrendingUp size={32} />
-            <h1>Trending Podcasts</h1>
+            <h1>trending videos</h1>
           </div>
         </div>
 
@@ -95,11 +95,11 @@ const Trending = ({ onVideoSelect }) => {
       <div className="trending-header">
         <div className="header-title">
           <TrendingUp size={32} />
-          <h1>Trending Podcasts</h1>
+          <h1>trending videos</h1>
           <Sparkles size={20} className="sparkle" />
         </div>
         <p className="subtitle">
-          Top trending podcasts discovered using <strong>Gemini Search</strong> 🤖
+          Top trending videos discovered using <strong>Gemini Search</strong> 🤖
         </p>
       </div>
 
