@@ -1,22 +1,28 @@
 # YouTube Podcast Summarizer - Agentic AI Hackathon Submission
 
+start backend:
+
+```
+
+```
+
 An intelligent agent that summarizes YouTube podcast transcripts using Google Gemini AI, demonstrating a complete agentic AI architecture with planning, execution, and memory components.
 
 ## 🎯 Hackathon Requirements
 
-✅ **Google Gemini API Integration**: Core AI engine for intelligent summarization  
-✅ **Agentic Architecture**: Modular design with Planner, Executor, and Memory  
-✅ **ReAct Pattern**: Reasoning + Acting workflow demonstrated  
-✅ **Tool Integration**: YouTube Transcript API + Gemini API  
-✅ **Full Observability**: Complete memory logging of all agent decisions  
+✅ **Google Gemini API Integration**: Core AI engine for intelligent summarization
+✅ **Agentic Architecture**: Modular design with Planner, Executor, and Memory
+✅ **ReAct Pattern**: Reasoning + Acting workflow demonstrated
+✅ **Tool Integration**: YouTube Transcript API + Gemini API
+✅ **Full Observability**: Complete memory logging of all agent decisions
 ✅ **Complete Documentation**: Architecture, explanation, and demo included
 
 ## 📋 Submission Checklist
 
-- [x] All code in `src/` runs without errors  
-- [x] `ARCHITECTURE.md` contains a clear diagram sketch and explanation  
-- [x] `EXPLANATION.md` covers planning, tool use, memory, and limitations  
-- [ ] `DEMO.md` links to a 3–5 min video with timestamped highlights  
+- [x] All code in `src/` runs without errors
+- [x] `ARCHITECTURE.md` contains a clear diagram sketch and explanation
+- [x] `EXPLANATION.md` covers planning, tool use, memory, and limitations
+- [ ] `DEMO.md` links to a 3–5 min video with timestamped highlights
 
 ## 🏗️ Architecture
 
@@ -96,16 +102,16 @@ DEMO.md                     # Video demo
 
 ## 🏅 Judging Criteria
 
-- **Technical Excellence **  
+- **Technical Excellence **
   This criterion evaluates the robustness, functionality, and overall quality of the technical implementation. Judges will assess the code's efficiency, the absence of critical bugs, and the successful execution of the project's core features.
 
-- **Solution Architecture & Documentation **  
+- **Solution Architecture & Documentation **
   This focuses on the clarity, maintainability, and thoughtful design of the project's architecture. This includes assessing the organization and readability of the codebase, as well as the comprehensiveness and conciseness of documentation (e.g., GitHub README, inline comments) that enables others to understand and potentially reproduce or extend the solution.
 
-- **Innovative Gemini Integration **  
+- **Innovative Gemini Integration **
   This criterion specifically assesses how effectively and creatively the Google Gemini API has been incorporated into the solution. Judges will look for novel applications, efficient use of Gemini's capabilities, and the impact it has on the project's functionality or user experience. You are welcome to use additional Google products.
 
-- **Societal Impact & Novelty **  
+- **Societal Impact & Novelty **
   This evaluates the project's potential to address a meaningful problem, contribute positively to society, or offer a genuinely innovative and unique solution. Judges will consider the originality of the idea, its potential real‑world applicability, and its ability to solve a challenge in a new or impactful way.
 
 

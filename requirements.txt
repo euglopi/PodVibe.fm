@@ -1,0 +1,8 @@
+# Core dependencies
+requests>=2.31.0
+
+# Gemini API (primary transcription engine)
+google-genai>=0.3.0
+
+# Local transcription fallback (offline, no API key needed)
+faster-whisper>=0.10.0

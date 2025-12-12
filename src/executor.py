@@ -175,21 +175,21 @@ class Executor:
         # Prompt templates for different summary types
         prompts = {
             'comprehensive': """Please provide a comprehensive summary of this podcast transcript. Include:
-1. Main topics discussed
-2. Key insights and takeaways
-3. Important quotes or statements
-4. Overall conclusion
+            1. Main topics discussed
+            2. Key insights and takeaways
+            3. Important quotes or statements
+            4. Overall conclusion
 
-Transcript:
-{text}""",
-            'brief': """Provide a brief 2-3 paragraph summary of this podcast transcript, focusing on the main points.
+            Transcript:
+            {text}""",
+                        'brief': """Provide a brief 2-3 paragraph summary of this podcast transcript, focusing on the main points.
 
-Transcript:
-{text}""",
-            'key_points': """Extract the key points from this podcast transcript as a bulleted list. Focus on the most important insights and actionable takeaways.
+            Transcript:
+            {text}""",
+                        'key_points': """Extract the key points from this podcast transcript as a bulleted list. Focus on the most important insights and actionable takeaways.
 
-Transcript:
-{text}"""
+            Transcript:
+            {text}"""
         }
         
         prompt = prompts.get(summary_type, prompts['comprehensive']).format(text=transcript)

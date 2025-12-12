@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Youtube, Brain, Zap, Clock, CheckCircle, AlertCircle, Loader2, FileText, Download } from 'lucide-react';
+import { Youtube, Brain, Zap, Clock, CheckCircle, AlertCircle, Loader2, FileText, Download, Home, TrendingUp } from 'lucide-react';
 import axios from 'axios';
+import Trending from './Trending';
 import './App.css';
 
 function App() {
@@ -9,7 +10,7 @@ function App() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(null);
-  const [memoryLog, setMemoryLog] = useState([]);
+  const [currentPage, setCurrentPage] = useState('trending'); // 'trending' or 'summarizer'
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +23,6 @@ function App() {
     setLoading(true);
     setError(null);
     setResult(null);
-    setMemoryLog([]);
     setCurrentStep('Initializing...');
 
     try {
@@ -52,6 +52,17 @@ function App() {
     }
   };
 
+  const handleVideoSelect = (videoUrl) => {
+    // When user clicks a video from trending, switch to summarizer and set URL
+    setUrl(videoUrl);
+    setCurrentPage('summarizer');
+    setResult(null);
+    setError(null);
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const downloadSummary = () => {
     if (!result) return;
     
@@ -66,184 +77,220 @@ function App() {
 
   return (
     <div className="app">
-      <div className="container">
-        {/* Header */}
-        <header className="header">
-          <div className="logo">
-            <Youtube className="icon-large" />
-            <h1>PodVibe.fm</h1>
+      {/* Navigation Bar */}
+      <nav className="nav-bar">
+        <div className="nav-content">
+          <div className="nav-logo">
+            <Youtube className="icon" />
+            <span className="logo-text">PodVibe.fm</span>
           </div>
-          <p className="subtitle">AI-Powered Podcast Summarizer | Google Gemini & Agentic AI</p>
-        </header>
-
-        {/* Input Form */}
-        <form onSubmit={handleSubmit} className="input-section">
-          <div className="input-group">
-            <input
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="Enter YouTube podcast URL (e.g., https://www.youtube.com/watch?v=...)"
-              className="url-input"
-              disabled={loading}
-            />
+          <div className="nav-links">
             <button 
-              type="submit" 
-              className="submit-btn"
-              disabled={loading}
+              className={`nav-link ${currentPage === 'trending' ? 'active' : ''}`}
+              onClick={() => setCurrentPage('trending')}
             >
-              {loading ? (
-                <>
-                  <Loader2 className="icon-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Zap className="icon" />
-                  Summarize
-                </>
-              )}
+              <TrendingUp size={18} />
+              Trending
+            </button>
+            <button 
+              className={`nav-link ${currentPage === 'summarizer' ? 'active' : ''}`}
+              onClick={() => setCurrentPage('summarizer')}
+            >
+              <Brain size={18} />
+              AI Summarizer
             </button>
           </div>
-        </form>
+        </div>
+      </nav>
 
-        {/* Error Message */}
-        {error && (
-          <div className="alert alert-error">
-            <AlertCircle className="icon" />
-            <span>{error}</span>
-          </div>
+      <div className="container">
+        {/* Trending Page */}
+        {currentPage === 'trending' && (
+          <Trending onVideoSelect={handleVideoSelect} />
         )}
 
-        {/* Loading Status */}
-        {loading && (
-          <div className="status-card">
-            <div className="status-header">
-              <Brain className="icon-pulse" />
-              <h3>Processing Your Request</h3>
-            </div>
-            <div className="progress-steps">
-              <div className="step active">
-                <CheckCircle className="icon" />
-                <span>Planning execution</span>
+        {/* Summarizer Page */}
+        {currentPage === 'summarizer' && (
+          <>
+            {/* Header */}
+            <header className="header">
+              <div className="logo">
+                <Brain className="icon-large" />
+                <h1>AI-Powered Podcast Summarizer</h1>
               </div>
-              <div className="step active">
-                <CheckCircle className="icon" />
-                <span>Extracting video ID</span>
-              </div>
-              <div className="step active">
-                <Loader2 className="icon-spin" />
-                <span>Fetching transcript</span>
-              </div>
-              <div className="step">
-                <Clock className="icon" />
-                <span>Generating AI summary</span>
-              </div>
-              <div className="step">
-                <Clock className="icon" />
-                <span>Extracting semantic keywords</span>
-              </div>
-            </div>
-            <p className="status-message">{currentStep}</p>
-          </div>
-        )}
+              <p className="subtitle">Powered by Google Gemini & Agentic AI</p>
+            </header>
 
-        {/* Results */}
-        {result && !loading && (
-          <div className="results">
-            {/* Summary Card */}
-            <div className="result-card">
-              <div className="card-header">
-                <div className="header-left">
-                  <FileText className="icon" />
-                  <h2>AI-Generated Summary</h2>
-                </div>
-                <button onClick={downloadSummary} className="download-btn">
-                  <Download className="icon" />
-                  Download JSON
+            {/* Input Form */}
+            <form onSubmit={handleSubmit} className="input-section">
+              <div className="input-group">
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="Enter YouTube podcast URL (e.g., https://www.youtube.com/watch?v=...)"
+                  className="url-input"
+                  disabled={loading}
+                />
+                <button 
+                  type="submit" 
+                  className="submit-btn"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="icon-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="icon" />
+                      Summarize
+                    </>
+                  )}
                 </button>
               </div>
-              <div className="summary-content">
-                <div className="video-info">
-                  <span className="video-id">Video ID: {result.video_id}</span>
-                  <span className="timestamp">
-                    <Clock className="icon-small" />
-                    {new Date(result.timestamp).toLocaleString()}
-                  </span>
+            </form>
+
+            {/* Error Message */}
+            {error && (
+              <div className="alert alert-error">
+                <AlertCircle className="icon" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Loading Status */}
+            {loading && (
+              <div className="status-card">
+                <div className="status-header">
+                  <Brain className="icon-pulse" />
+                  <h3>Processing Your Request</h3>
                 </div>
-                <div className="summary-text">
-                  {result.summary}
+                <div className="progress-steps">
+                  <div className="step active">
+                    <CheckCircle className="icon" />
+                    <span>Planning execution</span>
+                  </div>
+                  <div className="step active">
+                    <CheckCircle className="icon" />
+                    <span>Extracting video ID</span>
+                  </div>
+                  <div className="step active">
+                    <Loader2 className="icon-spin" />
+                    <span>Fetching transcript</span>
+                  </div>
+                  <div className="step">
+                    <Clock className="icon" />
+                    <span>Generating AI summary</span>
+                  </div>
+                  <div className="step">
+                    <Clock className="icon" />
+                    <span>Extracting semantic keywords</span>
+                  </div>
                 </div>
-                
-                {/* Keywords Section */}
-                {result.keywords && result.keywords.length > 0 && (
-                  <div className="keywords-section">
-                    <h3>🏷️ Semantic Keywords</h3>
-                    <div className="keywords-container">
-                      {result.keywords.map((keyword, index) => (
-                        <span key={index} className="keyword-tag">
-                          {keyword}
-                        </span>
-                      ))}
+                <p className="status-message">{currentStep}</p>
+              </div>
+            )}
+
+            {/* Results */}
+            {result && !loading && (
+              <div className="results">
+                {/* Summary Card */}
+                <div className="result-card">
+                  <div className="card-header">
+                    <div className="header-left">
+                      <FileText className="icon" />
+                      <h2>AI-Generated Summary</h2>
+                    </div>
+                    <button onClick={downloadSummary} className="download-btn">
+                      <Download className="icon" />
+                      Download JSON
+                    </button>
+                  </div>
+                  <div className="summary-content">
+                    <div className="video-info">
+                      <span className="video-id">Video ID: {result.video_id}</span>
+                      <span className="timestamp">
+                        <Clock className="icon-small" />
+                        {new Date(result.timestamp).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="summary-text">
+                      {result.summary}
+                    </div>
+                    
+                    {/* Keywords Section */}
+                    {result.keywords && result.keywords.length > 0 && (
+                      <div className="keywords-section">
+                        <h3>🏷️ Semantic Keywords</h3>
+                        <div className="keywords-container">
+                          {result.keywords.map((keyword, index) => (
+                            <span key={index} className="keyword-tag">
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stats Card */}
+                <div className="stats-grid">
+                  <div className="stat-card">
+                    <div className="stat-icon">
+                      <FileText />
+                    </div>
+                    <div className="stat-content">
+                      <span className="stat-value">{result.transcript_length?.toLocaleString() || 'N/A'}</span>
+                      <span className="stat-label">Characters</span>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">
+                      <Brain />
+                    </div>
+                    <div className="stat-content">
+                      <span className="stat-value">{result.segments || 'N/A'}</span>
+                      <span className="stat-label">Segments</span>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">
+                      <CheckCircle />
+                    </div>
+                    <div className="stat-content">
+                      <span className="stat-value">5/5</span>
+                      <span className="stat-label">Tasks Completed</span>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Stats Card */}
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-icon">
-                  <FileText />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-value">{result.transcript_length?.toLocaleString() || 'N/A'}</span>
-                  <span className="stat-label">Characters</span>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">
-                  <Brain />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-value">{result.segments || 'N/A'}</span>
-                  <span className="stat-label">Segments</span>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">
-                  <CheckCircle />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-value">5/5</span>
-                  <span className="stat-label">Tasks Completed</span>
+                {/* Architecture Info */}
+                <div className="architecture-card">
+                  <h3>
+                    <Zap className="icon" />
+                    Agentic AI Architecture
+                  </h3>
+                  <div className="architecture-grid">
+                    <div className="arch-item">
+                      <div className="arch-badge">Planner</div>
+                      <p>Created 5-step execution plan using ReAct pattern</p>
+                    </div>
+                    <div className="arch-item">
+                      <div className="arch-badge">Executor</div>
+                      <p>Used URL parser, YouTube API, Gemini 2.5 Flash, and keyword extractor</p>
+                    </div>
+                    <div className="arch-item">
+                      <div className="arch-badge">Memory</div>
+                      <p>Logged all agent activities with timestamps</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Architecture Info */}
-            <div className="architecture-card">
-              <h3>
-                <Zap className="icon" />
-                Agentic AI Architecture
-              </h3>
-              <div className="architecture-grid">
-                <div className="arch-item">
-                  <div className="arch-badge">Planner</div>
-                  <p>Created 5-step execution plan using ReAct pattern</p>
-                </div>
-                <div className="arch-item">
-                  <div className="arch-badge">Executor</div>
-                  <p>Used URL parser, YouTube API, Gemini 2.5 Flash, and keyword extractor</p>
-                </div>
-                <div className="arch-item">
-                  <div className="arch-badge">Memory</div>
-                  <p>Logged all agent activities with timestamps</p>
-                </div>
-              </div>
-            </div>
-          </div>
+            )}
+          </>
         )}
 
         {/* Footer */}

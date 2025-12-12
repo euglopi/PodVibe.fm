@@ -141,6 +141,13 @@ def list_models():
         }), 500
 
 
+@app.route('/api/trending', methods=['GET'])
+def get_trending():
+    """Get trending podcasts by category using YouTube API or sample data"""
+    from trending import get_trending_podcasts_route
+    return get_trending_podcasts_route()
+
+
 if __name__ == '__main__':
     print("🚀 Starting PodVibe.fm API...")
     print("📡 React frontend should connect to: http://localhost:8000")
@@ -148,14 +155,22 @@ if __name__ == '__main__':
     print("   - GET  /api/health     - Health check")
     print("   - POST /api/summarize  - Summarize YouTube video")
     print("   - GET  /api/models     - List available models")
+    print("   - GET  /api/trending   - Get trending podcasts")
     print("\n" + "="*80)
     
-    # Check for API key
+    # Check for API keys
     if not os.getenv('GEMINI_API_KEY'):
         print("⚠️  WARNING: GEMINI_API_KEY not found in environment!")
         print("   Make sure your .env file is configured correctly.")
     else:
         print("✅ GEMINI_API_KEY found")
+    
+    if not os.getenv('YOUTUBE_API_KEY'):
+        print("ℹ️  YOUTUBE_API_KEY not found - using sample data for trending")
+        print("   To get real trending videos, add YOUTUBE_API_KEY to .env")
+        print("   Run: ./setup_youtube_api.sh")
+    else:
+        print("✅ YOUTUBE_API_KEY found - using real YouTube data!")
     
     print("="*80 + "\n")
     
