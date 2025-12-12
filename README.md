@@ -260,7 +260,7 @@ curl http://localhost:8000/api/trending
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Detailed system architecture and component design
 - **[EXPLANATION.md](EXPLANATION.md)** - Technical explanation of agent workflow and implementation
-- **[DEMO.md](DEMO.md)** - Video demonstration (coming soon)
+- **[DEMO.md](DEMO.md)** - Video demonstration
 
 ## 🤝 Contributing
 
