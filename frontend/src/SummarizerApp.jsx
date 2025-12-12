@@ -12,13 +12,43 @@ function App() {
   const [currentStep, setCurrentStep] = useState(null);
   const [currentPage, setCurrentPage] = useState('trending'); // 'trending' or 'summarizer'
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!url.trim()) {
-      setError('Please enter a YouTube URL');
+  const getYouTubeVideoId = (inputUrl) => {
+    if (!inputUrl) return null;
+    try {
+      const urlObj = new URL(inputUrl);
+      // Standard watch URL
+      if (urlObj.hostname.includes('youtube.com')) {
+        // e.g. https://www.youtube.com/watch?v=VIDEOID
+        const vParam = urlObj.searchParams.get('v');
+        if (vParam) return vParam;
+        // e.g. https://www.youtube.com/embed/VIDEOID
+        const parts = urlObj.pathname.split('/');
+        const embedIndex = parts.indexOf('embed');
+        if (embedIndex !== -1 && parts[embedIndex + 1]) return parts[embedIndex + 1];
+        // e.g. https://www.youtube.com/shorts/VIDEOID
+        const shortsIndex = parts.indexOf('shorts');
+        if (shortsIndex !== -1 && parts[shortsIndex + 1]) return parts[shortsIndex + 1];
+      }
+      // youtu.be short link: https://youtu.be/VIDEOID
+      if (urlObj.hostname === 'youtu.be') {
+        const parts = urlObj.pathname.split('/').filter(Boolean);
+        if (parts[0]) return parts[0];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const startSummarization = async (inputUrl) => {
+    const targetUrl = (inputUrl ?? url)?.trim();
+    if (!targetUrl) {
+      setError('Please select a YouTube video from Trending.');
       return;
     }
+
+    // Ensure state reflects the target URL being processed
+    if (inputUrl && inputUrl !== url) setUrl(inputUrl);
 
     setLoading(true);
     setError(null);
@@ -26,25 +56,21 @@ function App() {
     setCurrentStep('Initializing...');
 
     try {
-      // Call the backend API
-      const response = await axios.post('/api/summarize', {
-        url: url.trim()
-      });
-
+      const response = await axios.post('/api/summarize', { url: targetUrl });
       setResult(response.data);
       setCurrentStep('Complete!');
     } catch (err) {
       console.error('API Error:', err);
       let errorMessage = 'Failed to process video. Please try again.';
-      
-      if (err.code === 'ERR_NETWORK' || err.message.includes('Network Error')) {
+
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
         errorMessage = 'Cannot connect to API server. Make sure the Flask API is running on http://localhost:8000';
       } else if (err.response) {
         errorMessage = err.response.data?.error || `Server error: ${err.response.status}`;
       } else if (err.request) {
         errorMessage = 'No response from server. Check if API is running.';
       }
-      
+
       setError(errorMessage);
       setCurrentStep(null);
     } finally {
@@ -62,6 +88,14 @@ function App() {
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Auto-start summarization when arriving on summarizer page with a URL
+  React.useEffect(() => {
+    if (currentPage === 'summarizer' && url && !loading && !result) {
+      startSummarization(url);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, url]);
 
   const downloadSummary = () => {
     if (!result) return;
@@ -121,36 +155,35 @@ function App() {
               <p className="subtitle">Powered by Google Gemini & Agentic AI</p>
             </header>
 
-            {/* Input Form */}
-            <form onSubmit={handleSubmit} className="input-section">
-              <div className="input-group">
-                <input
-                  type="text"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="Enter YouTube podcast URL (e.g., https://www.youtube.com/watch?v=...)"
-                  className="url-input"
-                  disabled={loading}
-                />
-                <button 
-                  type="submit" 
-                  className="submit-btn"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="icon-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="icon" />
-                      Summarize
-                    </>
-                  )}
-                </button>
+            {/* Input removed by request; summarization auto-starts on video click */}
+            {!url && (
+              <div className="alert" style={{ marginTop: 12 }}>
+                <AlertCircle className="icon" />
+                <span>Select a video from Trending to start summarization.</span>
               </div>
-            </form>
+            )}
+
+            {/* Media Player */}
+            {url && (
+              <div className="player-section" style={{ marginTop: '16px' }}>
+                {getYouTubeVideoId(url) ? (
+                  <div className="player-wrapper" style={{ position: 'relative', paddingTop: '56.25%' }}>
+                    <iframe
+                      title="YouTube player"
+                      src={`https://www.youtube.com/embed/${getYouTubeVideoId(url)}?autoplay=1&mute=1&playsinline=1&rel=0`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                    />
+                  </div>
+                ) : (
+                  <div className="alert alert-error">
+                    <AlertCircle className="icon" />
+                    <span>Invalid YouTube URL. Please check and try again.</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Error Message */}
             {error && (
