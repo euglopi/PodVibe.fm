@@ -19,6 +19,8 @@ _ISO8601_DURATION_RE = re.compile(
     r"$"
 )
 
+_YT_API_DISABLED_REASON: Optional[str] = None
+
 
 def _parse_duration_seconds(iso_duration: str) -> int:
     """
@@ -34,6 +36,42 @@ def _parse_duration_seconds(iso_duration: str) -> int:
     minutes = int(m.group("minutes") or 0)
     seconds = int(m.group("seconds") or 0)
     return hours * 3600 + minutes * 60 + seconds
+
+
+def _extract_youtube_error_reason(resp: requests.Response) -> Dict[str, str]:
+    """
+    Best-effort extraction of YouTube Data API error details.
+    Returns {'reason': '...', 'message': '...'} (empty strings if unknown).
+    """
+    try:
+        payload = resp.json() if resp is not None else {}
+    except Exception:
+        payload = {}
+
+    err = (payload or {}).get("error") or {}
+    message = str(err.get("message") or "")
+    reason = ""
+    errors = err.get("errors") or []
+    if isinstance(errors, list) and errors:
+        reason = str((errors[0] or {}).get("reason") or "")
+    return {"reason": reason, "message": message}
+
+
+def _hint_for_youtube_reason(reason: str) -> str:
+    r = (reason or "").lower()
+    if r in {"accessnotconfigured"}:
+        return "Enable **YouTube Data API v3** for the project that owns this API key."
+    if r in {"keyinvalid"}:
+        return "API key is invalid. Recreate the key and update `YOUTUBE_API_KEY`."
+    if r in {"keyexpired"}:
+        return "API key is expired. Recreate the key and update `YOUTUBE_API_KEY`."
+    if r in {"dailyquotaexceeded", "quotaexceeded", "dailylimitexceeded"}:
+        return "Quota/billing issue. Check quota usage in Google Cloud and add billing / request higher quota."
+    if r in {"iprefererblocked", "refererblocked", "forbidden"}:
+        return "Key restriction mismatch. If the key is HTTP-referrer restricted, it won't work from a backend server. Prefer **IP restriction** (your server IP) or remove restrictions."
+    if r in {"ratelimitexceeded", "userratelimitexceeded"}:
+        return "Rate limited. Reduce calls (cache results) and/or back off."
+    return "Open the API key in Google Cloud Console and verify: API enabled, key restrictions, and quota/billing."
 
 
 def _parse_published_at(published_at: str) -> Optional[datetime]:
@@ -123,6 +161,11 @@ def search_youtube_videos(query, max_results=3):
     if not api_key:
         return generate_sample_videos(query, max_results)
 
+    global _YT_API_DISABLED_REASON
+    if _YT_API_DISABLED_REASON:
+        # Avoid spamming YouTube with requests once we know it's blocked.
+        return generate_sample_videos(query, max_results)
+
     try:
         # Only show recently uploaded: last 14 days
         published_after = (datetime.now(timezone.utc) - timedelta(days=14)).strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -201,6 +244,25 @@ def search_youtube_videos(query, max_results=3):
 
         return filtered
 
+    except requests.exceptions.HTTPError as e:
+        resp = getattr(e, "response", None)
+        status = getattr(resp, "status_code", None)
+        details = _extract_youtube_error_reason(resp) if resp is not None else {"reason": "", "message": ""}
+
+        reason = details.get("reason") or ""
+        message = details.get("message") or ""
+
+        # If we get a hard 403, disable further YouTube attempts for this process run.
+        if status == 403:
+            _YT_API_DISABLED_REASON = reason or "forbidden"
+
+        hint = _hint_for_youtube_reason(reason)
+        print(
+            f"YouTube API HTTP error for '{query}': {status} {reason or ''} {message or ''}".strip()
+        )
+        print(f"Hint: {hint}")
+        # Fallback to sample data
+        return generate_sample_videos(query, max_results)
     except Exception as e:
         print(f"YouTube API error for '{query}': {str(e)}")
         # Fallback to sample data
@@ -213,6 +275,7 @@ def generate_sample_videos(query, count=3):
     This provides a working demo even without API keys
     """
     # Map of sample videos for each category
+    print(f"Generating sample videos for '{query}'")
     samples = {
         "Latest in AI": [
             {
