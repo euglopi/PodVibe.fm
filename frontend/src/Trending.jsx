@@ -4,9 +4,74 @@ import axios from 'axios';
 import './Trending.css';
 
 const Trending = ({ onVideoSelect }) => {
+  const MIN_PODCAST_SECONDS = 60 * 60;
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [trendingData, setTrendingData] = useState(null);
+
+  const parseDurationToSeconds = (input) => {
+    if (input == null) return 0;
+    if (typeof input === 'number' && Number.isFinite(input)) return Math.max(0, Math.floor(input));
+    if (typeof input !== 'string') return 0;
+
+    const raw = input.trim();
+    if (!raw) return 0;
+
+    // ISO-8601 durations like "PT1H2M3S"
+    if (/^PT/i.test(raw)) {
+      const h = raw.match(/(\d+)\s*H/i)?.[1];
+      const m = raw.match(/(\d+)\s*M/i)?.[1];
+      const s = raw.match(/(\d+)\s*S/i)?.[1];
+      return (Number(h || 0) * 3600) + (Number(m || 0) * 60) + Number(s || 0);
+    }
+
+    // "1h 2m 3s" / "1 hr 2 min" style
+    if (/[hms]/i.test(raw)) {
+      const h = raw.match(/(\d+)\s*h/i)?.[1];
+      const m = raw.match(/(\d+)\s*m/i)?.[1];
+      const s = raw.match(/(\d+)\s*s/i)?.[1];
+      return (Number(h || 0) * 3600) + (Number(m || 0) * 60) + Number(s || 0);
+    }
+
+    // "HH:MM:SS" or "MM:SS"
+    if (/^\d+:\d{2}(:\d{2})?$/.test(raw)) {
+      const parts = raw.split(':').map((p) => Number(p));
+      if (parts.some((n) => Number.isNaN(n))) return 0;
+      if (parts.length === 3) return (parts[0] * 3600) + (parts[1] * 60) + parts[2];
+      // MM:SS
+      return (parts[0] * 60) + parts[1];
+    }
+
+    // plain numeric seconds in a string
+    const asNum = Number(raw);
+    if (Number.isFinite(asNum)) return Math.max(0, Math.floor(asNum));
+
+    return 0;
+  };
+
+  const getDurationSeconds = (video) => {
+    const direct = video?.durationSeconds;
+    if (typeof direct === 'number' && Number.isFinite(direct)) return direct;
+    if (typeof direct === 'string' && direct.trim() && Number.isFinite(Number(direct))) return Number(direct);
+
+    // fallbacks some APIs use
+    return parseDurationToSeconds(
+      video?.duration ??
+        video?.durationText ??
+        video?.length ??
+        video?.lengthText ??
+        video?.contentDetails?.duration
+    );
+  };
+
+  const isPodcastTagged = (video) => {
+    if (!video) return false;
+    if (video.isPodcast === true) return true;
+
+    const haystack = `${video.title || ''} ${video.description || ''} ${video.channel || ''}`.toLowerCase();
+    return haystack.includes('podcast') || haystack.includes('#podcast') || haystack.includes('#podcasts');
+  };
 
   useEffect(() => {
     fetchTrendingPodcasts();
@@ -105,21 +170,27 @@ const Trending = ({ onVideoSelect }) => {
 
       {/* Unified Grid (category rows + video cards share one grid system) */}
       <div className="trending-grid">
-        {categories.map(([categoryId, categoryData], categoryIndex) => (
-          <React.Fragment key={categoryId}>
+        {categories.map(([categoryId, categoryData], categoryIndex) => {
+          const filteredVideos = (categoryData?.videos || []).filter((video) => {
+            const durationSeconds = getDurationSeconds(video);
+            return durationSeconds >= MIN_PODCAST_SECONDS && isPodcastTagged(video);
+          });
+
+          return (
+            <React.Fragment key={categoryId}>
             {/* Category Header Row (spans full grid) */}
             <div className={`category-row ${categoryIndex === 0 ? 'category-row--first' : ''}`}>
               <span className="category-icon">{categoryData.icon}</span>
               <h2 className="category-title">{categoryData.name}</h2>
               <div className="category-badge">
                 <TrendingUp size={14} />
-                Top {categoryData.videos.length}
+                Top {filteredVideos.length}
               </div>
             </div>
 
             {/* Video Cards */}
-            {categoryData.videos.length > 0 ? (
-              categoryData.videos.map((video, index) => (
+            {filteredVideos.length > 0 ? (
+              filteredVideos.map((video, index) => (
                 <div
                   key={video.video_id || `${categoryId}-${index}`}
                   className="video-card video-card--compact"
@@ -157,11 +228,12 @@ const Trending = ({ onVideoSelect }) => {
               ))
             ) : (
               <div className="no-videos">
-                <p>No trending videos found for this category</p>
+                <p>No podcast episodes (≥ 1 hour) found for this category</p>
               </div>
             )}
           </React.Fragment>
-        ))}
+          );
+        })}
       </div>
 
       {/* Footer Note */}
