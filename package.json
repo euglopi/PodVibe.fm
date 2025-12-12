@@ -3,7 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bunx --bun vite"
+    "dev": "bunx --bun vite",
+    "clip": "bun run src/utils/clip-splicer.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -16,7 +17,10 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^7.10.1",
+    "tailwindcss": "^4.1.18"
   }
 }

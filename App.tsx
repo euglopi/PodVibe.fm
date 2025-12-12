@@ -1,8 +1,16 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Home } from "./pages/Home";
+import { Browse } from "./pages/Browse";
+import { Player } from "./pages/Player";
+
 export function App() {
   return (
-    <div>
-      <h1>PodVibe.fm</h1>
-      <p>Skip the fluff. Get the wisdom.</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/browse" element={<Browse />} />
+        <Route path="/player/:categoryId" element={<Player />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
