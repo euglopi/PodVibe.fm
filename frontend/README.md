@@ -95,6 +95,17 @@ npm run build
 
 The optimized production build will be in the `dist/` directory.
 
+## Clip splicer (FFmpeg helper)
+
+This repo includes a bun-based clip splicer CLI at `../src/utils/clip-splicer.ts`.
+
+From the `frontend/` directory:
+
+```bash
+# requires bun installed
+npm run clip -- --help
+```
+
 ## Environment Variables
 
 Make sure your `.env` file in the parent directory contains:
