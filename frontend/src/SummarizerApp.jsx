@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Youtube, Brain, Zap, Clock, CheckCircle, AlertCircle, Loader2, FileText, Download, Home, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { Youtube, Brain, Clock, CheckCircle, AlertCircle, Loader2, FileText, Download, Home, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 import Trending from './Trending';
 import './App.css';
@@ -346,28 +346,6 @@ function App() {
                         </div>
                       </div>
                     )}
-                  </div>
-                </div>
-
-                {/* Architecture Info */}
-                <div className="architecture-card">
-                  <h3>
-                    <Zap className="icon" />
-                    Agentic AI Architecture
-                  </h3>
-                  <div className="architecture-grid">
-                    <div className="arch-item">
-                      <div className="arch-badge">Planner</div>
-                      <p>Created 5-step execution plan using ReAct pattern</p>
-                    </div>
-                    <div className="arch-item">
-                      <div className="arch-badge">Executor</div>
-                      <p>Used URL parser, YouTube API, Gemini 2.5 Flash, and keyword extractor</p>
-                    </div>
-                    <div className="arch-item">
-                      <div className="arch-badge">Memory</div>
-                      <p>Logged all agent activities with timestamps</p>
-                    </div>
                   </div>
                 </div>
               </div>
