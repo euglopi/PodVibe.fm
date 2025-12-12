@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Youtube, Brain, Zap, Clock, CheckCircle, AlertCircle, Loader2, FileText, Download, Home, TrendingUp } from 'lucide-react';
+import { Youtube, Brain, Zap, Clock, CheckCircle, AlertCircle, Loader2, FileText, Download, Home, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 import Trending from './Trending';
 import './App.css';
@@ -13,6 +13,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState('trending'); // 'trending' or 'summarizer'
   const [seekingKeyword, setSeekingKeyword] = useState(null);
   const [videoStartTime, setVideoStartTime] = useState(null);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
 
   const getYouTubeVideoId = (inputUrl) => {
     if (!inputUrl) return null;
@@ -272,28 +273,47 @@ function App() {
                 {/* Summary Card */}
                 <div className="result-card">
                   <div className="card-header">
-                    <div className="header-left">
+                    <div 
+                      className="header-left" 
+                      style={{ cursor: 'pointer', flex: 1 }}
+                      onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                    >
                       <FileText className="icon" />
                       <h2>AI-Generated Summary</h2>
+                      {isSummaryExpanded ? (
+                        <ChevronUp className="icon" style={{ marginLeft: '8px' }} />
+                      ) : (
+                        <ChevronDown className="icon" style={{ marginLeft: '8px' }} />
+                      )}
                     </div>
-                    <button onClick={downloadSummary} className="download-btn">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        downloadSummary();
+                      }} 
+                      className="download-btn"
+                    >
                       <Download className="icon" />
                       Download JSON
                     </button>
                   </div>
                   <div className="summary-content">
-                    <div className="video-info">
-                      <span className="video-id">Video ID: {result.video_id}</span>
-                      <span className="timestamp">
-                        <Clock className="icon-small" />
-                        {new Date(result.timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="summary-text">
-                      {result.summary}
-                    </div>
+                    {isSummaryExpanded && (
+                      <>
+                        <div className="video-info">
+                          <span className="video-id">Video ID: {result.video_id}</span>
+                          <span className="timestamp">
+                            <Clock className="icon-small" />
+                            {new Date(result.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="summary-text">
+                          {result.summary}
+                        </div>
+                      </>
+                    )}
                     
-                    {/* Keywords Section */}
+                    {/* Keywords Section - Always visible */}
                     {result.keywords && result.keywords.length > 0 && (
                       <div className="keywords-section">
                         <h3>🏷️ Semantic Keywords</h3>
@@ -326,37 +346,6 @@ function App() {
                         </div>
                       </div>
                     )}
-                  </div>
-                </div>
-
-                {/* Stats Card */}
-                <div className="stats-grid">
-                  <div className="stat-card">
-                    <div className="stat-icon">
-                      <FileText />
-                    </div>
-                    <div className="stat-content">
-                      <span className="stat-value">{result.transcript_length?.toLocaleString() || 'N/A'}</span>
-                      <span className="stat-label">Characters</span>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">
-                      <Brain />
-                    </div>
-                    <div className="stat-content">
-                      <span className="stat-value">{result.segments || 'N/A'}</span>
-                      <span className="stat-label">Segments</span>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">
-                      <CheckCircle />
-                    </div>
-                    <div className="stat-content">
-                      <span className="stat-value">5/5</span>
-                      <span className="stat-label">Tasks Completed</span>
-                    </div>
                   </div>
                 </div>
 

@@ -163,6 +163,7 @@ def search_youtube_videos(query, max_results=3):
 
     global _YT_API_DISABLED_REASON
     if _YT_API_DISABLED_REASON:
+        print(f"YouTube API is disabled: {_YT_API_DISABLED_REASON}")
         # Avoid spamming YouTube with requests once we know it's blocked.
         return generate_sample_videos(query, max_results)
 
