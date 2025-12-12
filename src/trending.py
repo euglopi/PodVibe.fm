@@ -1,5 +1,5 @@
 """
-Trending Podcasts API - Updated to use YouTube Data API
+trending videos API - Updated to use YouTube Data API
 More reliable than Gemini Search for finding trending videos
 """
 
@@ -109,24 +109,24 @@ def _fetch_video_details(video_ids: List[str], api_key: str) -> Dict[str, Dict[s
 def search_youtube_videos(query, max_results=3):
     """
     Use YouTube Data API to search for videos
-    
+
     Args:
         query: Search query
         max_results: Number of results
-    
+
     Returns:
         List of video objects
     """
     api_key = os.getenv('YOUTUBE_API_KEY')
-    
+
     # Fallback: Use Gemini to generate sample data if no YouTube API key
     if not api_key:
         return generate_sample_videos(query, max_results)
-    
+
     try:
         # Only show recently uploaded: last 14 days
         published_after = (datetime.now(timezone.utc) - timedelta(days=14)).strftime('%Y-%m-%dT%H:%M:%SZ')
-        
+
         url = "https://www.googleapis.com/youtube/v3/search"
         # Fetch more than needed so we can filter down to strict constraints:
         # - uploaded within 2 weeks (publishedAfter)
@@ -145,11 +145,11 @@ def search_youtube_videos(query, max_results=3):
             'videoDuration': 'long',  # > 20 minutes (we'll further filter to >= 60 mins)
             'relevanceLanguage': 'en'
         }
-        
+
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-        
+
         search_items = data.get("items", [])
         video_ids = [it.get("id", {}).get("videoId") for it in search_items if it.get("id", {}).get("videoId")]
         details_map = _fetch_video_details(video_ids, api_key)
@@ -200,7 +200,7 @@ def search_youtube_videos(query, max_results=3):
                 break
 
         return filtered
-        
+
     except Exception as e:
         print(f"YouTube API error for '{query}': {str(e)}")
         # Fallback to sample data
@@ -356,12 +356,12 @@ def generate_sample_videos(query, count=3):
             }
         ]
     }
-    
+
     # Return sample videos for the query
     for category, videos in samples.items():
         if category.lower() in query.lower():
             return videos[:count]
-    
+
     # Default fallback
     return samples.get("Latest in AI", [])[:count]
 
@@ -369,7 +369,7 @@ def generate_sample_videos(query, count=3):
 def get_trending_podcasts_route():
     """
     Flask route handler for /api/trending
-    Returns trending podcasts for all categories
+    Returns trending videos for all categories
     """
     try:
         categories = [
@@ -378,36 +378,36 @@ def get_trending_podcasts_route():
             {"id": "movies", "name": "Movies", "icon": "🎬"},
             {"id": "politics", "name": "Politics", "icon": "🗳️"}
         ]
-        
+
         results = {}
-        
+
         # Check if YouTube API key is available
         has_youtube_api = bool(os.getenv('YOUTUBE_API_KEY'))
-        
+
         if not has_youtube_api:
             print("⚠️  No YOUTUBE_API_KEY found - using sample data")
-        
+
         for category in categories:
-            print(f"🔍 Searching trending podcasts for: {category['name']}")
+            print(f"🔍 Searching trending videos for: {category['name']}")
             videos = search_youtube_videos(category['name'], max_results=3)
-            
+
             results[category['id']] = {
                 'name': category['name'],
                 'icon': category['icon'],
                 'videos': videos
             }
-            
+
             print(f"✅ Found {len(videos)} videos for {category['name']}")
-        
+
         return jsonify({
             'success': True,
             'categories': results,
             'timestamp': datetime.now().isoformat(),
             'using_sample_data': not has_youtube_api
         }), 200
-        
+
     except Exception as e:
-        print(f"❌ Error getting trending podcasts: {str(e)}")
+        print(f"❌ Error getting trending videos: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({

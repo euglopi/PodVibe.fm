@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, Play, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import avatarFemale from "@assets/images/avatar-female.png";
 
 // --- Components ---
 
-const Hero = ({ onOpenWaitlist }: { onOpenWaitlist: () => void }) => {
+const Hero = ({ onNavigateToApp }: { onNavigateToApp: () => void }) => {
   return (
     <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
       {/* Video Background */}
@@ -65,7 +66,7 @@ const Hero = ({ onOpenWaitlist }: { onOpenWaitlist: () => void }) => {
           <Button
             size="lg"
             className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-8 text-lg font-medium tracking-wide transition-all duration-300 hover:scale-105"
-            onClick={onOpenWaitlist}
+            onClick={onNavigateToApp}
             data-testid="button-hero-cta"
           >
             Start Curating
@@ -363,10 +364,11 @@ const FinalCTA = ({ onOpenWaitlist }: { onOpenWaitlist: () => void }) => {
 
 const LandingPage = () => {
   const [waitlistOpen, setWaitlistOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
   return (
     <div className="bg-white min-h-screen selection:bg-cyan-100 selection:text-cyan-900">
-      <Hero onOpenWaitlist={() => setWaitlistOpen(true)} />
+      <Hero onNavigateToApp={() => setLocation("/app")} />
       <AvatarSection />
       <PerfectFor />
       <HowItWorks />

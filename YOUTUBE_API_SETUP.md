@@ -1,6 +1,6 @@
 # 🔑 YouTube API Setup Guide
 
-Get **real trending podcasts** from YouTube instead of sample data!
+Get **real trending videos** from YouTube instead of sample data!
 
 ---
 
@@ -163,7 +163,7 @@ curl http://localhost:8000/api/trending
 1. ✅ YouTube API configured
 2. Start backend: `python3 api.py`
 3. Open: http://localhost:3000
-4. Browse real trending podcasts!
+4. Browse real trending videos!
 5. Click "AI Summarize" to get insights
 
 ---
