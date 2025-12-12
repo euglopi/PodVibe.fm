@@ -262,42 +262,6 @@ curl http://localhost:8000/api/trending
 - **[EXPLANATION.md](EXPLANATION.md)** - Technical explanation of agent workflow and implementation
 - **[DEMO.md](DEMO.md)** - Video demonstration (coming soon)
 
-## 🏅 Judging Criteria Alignment
-
-### Technical Excellence
-- ✅ Robust error handling and graceful degradation
-- ✅ Clean, maintainable code with clear separation of concerns
-- ✅ Comprehensive test coverage of core functionality
-- ✅ Production-ready architecture
-
-### Solution Architecture & Documentation
-- ✅ Modular, extensible design
-- ✅ Complete documentation (README, ARCHITECTURE, EXPLANATION)
-- ✅ Clear code organization and inline comments
-- ✅ Easy to understand and extend
-
-### Innovative Gemini Integration
-- ✅ Specialized prompts for 80/20 principle summarization
-- ✅ Semantic keyword extraction
-- ✅ Intelligent timestamp finding using semantic understanding
-- ✅ Multiple summary types for different use cases
-
-### Societal Impact & Novelty
-- ✅ Solves real problem: information overload in podcast consumption
-- ✅ Enables efficient learning through high-value content extraction
-- ✅ Makes long-form content accessible to busy learners
-- ✅ Novel application of agentic AI to content curation
-
-## 🚧 Known Limitations
-
-- **API Dependencies** - Requires valid API keys and internet connection
-- **Transcript Availability** - Some videos may not have transcripts
-- **Performance** - Sequential execution (could be parallelized)
-- **Language Support** - Optimized for English content
-- **Scalability** - Designed for single-user, synchronous processing
-
-See [EXPLANATION.md](EXPLANATION.md) for detailed limitations and future improvements.
-
 ## 🤝 Contributing
 
 This is a hackathon submission. For questions or feedback, please open an issue.
