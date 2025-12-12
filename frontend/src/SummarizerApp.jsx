@@ -12,6 +12,34 @@ function App() {
   const [currentStep, setCurrentStep] = useState(null);
   const [currentPage, setCurrentPage] = useState('trending'); // 'trending' or 'summarizer'
 
+  const getYouTubeVideoId = (inputUrl) => {
+    if (!inputUrl) return null;
+    try {
+      const urlObj = new URL(inputUrl);
+      // Standard watch URL
+      if (urlObj.hostname.includes('youtube.com')) {
+        // e.g. https://www.youtube.com/watch?v=VIDEOID
+        const vParam = urlObj.searchParams.get('v');
+        if (vParam) return vParam;
+        // e.g. https://www.youtube.com/embed/VIDEOID
+        const parts = urlObj.pathname.split('/');
+        const embedIndex = parts.indexOf('embed');
+        if (embedIndex !== -1 && parts[embedIndex + 1]) return parts[embedIndex + 1];
+        // e.g. https://www.youtube.com/shorts/VIDEOID
+        const shortsIndex = parts.indexOf('shorts');
+        if (shortsIndex !== -1 && parts[shortsIndex + 1]) return parts[shortsIndex + 1];
+      }
+      // youtu.be short link: https://youtu.be/VIDEOID
+      if (urlObj.hostname === 'youtu.be') {
+        const parts = urlObj.pathname.split('/').filter(Boolean);
+        if (parts[0]) return parts[0];
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -151,6 +179,28 @@ function App() {
                 </button>
               </div>
             </form>
+
+            {/* Media Player */}
+            {url && (
+              <div className="player-section" style={{ marginTop: '16px' }}>
+                {getYouTubeVideoId(url) ? (
+                  <div className="player-wrapper" style={{ position: 'relative', paddingTop: '56.25%' }}>
+                    <iframe
+                      title="YouTube player"
+                      src={`https://www.youtube.com/embed/${getYouTubeVideoId(url)}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                    />
+                  </div>
+                ) : (
+                  <div className="alert alert-error">
+                    <AlertCircle className="icon" />
+                    <span>Invalid YouTube URL. Please check and try again.</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Error Message */}
             {error && (
