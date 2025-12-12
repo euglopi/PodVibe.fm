@@ -176,3 +176,5 @@ dist
 
 .vscode/*
 .env
+
+src/__pycache__/*
