@@ -1,4 +1,4 @@
-# YouTube Podcast Summarizer - Agentic AI Hackathon Submission
+# YouTube Podcast Insight - Agentic AI Hackathon Submission
 
 start backend:
 
