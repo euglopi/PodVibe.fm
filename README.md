@@ -46,25 +46,20 @@ For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md).
 ### Prerequisites
 
 - **Python 3.8+**
-- **Google Gemini API Key** - [Get one free](https://makersuite.google.com/app/apikey)
+- **Google Gemini API Key** 
 - **YouTube API Key** (Optional) - For trending videos feature
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/euglopi/PodVibe.fm.git
    cd PodVibe.fm
    ```
 
 2. **Install Python dependencies**
    ```bash
    pip install -r requirements.txt
-   ```
-   
-   Additional dependencies for full functionality:
-   ```bash
-   pip install streamlit flask flask-cors youtube-transcript-api python-dotenv google-generativeai
    ```
 
 3. **Set up environment variables**
@@ -73,19 +68,6 @@ For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md).
    ```env
    GEMINI_API_KEY=your-gemini-api-key-here
    YOUTUBE_API_KEY=your-youtube-api-key-here  # Optional
-   ```
-   
-   Or set them in your shell:
-   ```powershell
-   # Windows PowerShell
-   $env:GEMINI_API_KEY='your-gemini-api-key-here'
-   $env:YOUTUBE_API_KEY='your-youtube-api-key-here'
-   ```
-   
-   ```bash
-   # Linux/Mac
-   export GEMINI_API_KEY='your-gemini-api-key-here'
-   export YOUTUBE_API_KEY='your-youtube-api-key-here'
    ```
 
 ### Running the Application
