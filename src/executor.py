@@ -284,19 +284,77 @@ Return ONLY the timestamp number (no explanation, no text, just the number):"""
         
         # Prompt templates for different summary types
         prompts = {
-            'comprehensive': """Please provide a comprehensive summary of this podcast transcript. Include:
-            1. Main topics discussed
-            2. Key insights and takeaways
-            3. Important quotes or statements
-            4. Overall conclusion
+            'comprehensive': """You are an expert podcast curator for PodVibe.fm's LEARNING MODE, designed for users who want to extract maximum educational value in minimum time using the 80/20 principle.
+
+            MISSION: Extract the 20% of this podcast that delivers 80% of the learning value. Each segment should be a complete, standalone insight that can be understood independently.
+
+            ===== WHAT QUALIFIES AS "20% VALUE" =====
+            HIGH-VALUE CONTENT INCLUDES:
+            - Novel frameworks or mental models that change how you think
+            - Counter-intuitive insights that challenge common assumptions
+            - Actionable steps with clear, specific implementation guidance
+            - Data, studies, or research that supports conclusions with evidence
+            - Expert synthesis of complex topics into understandable concepts
+            - Practical examples or case studies illustrating abstract ideas
+            - Clear cause-effect relationships with explanatory power
+            - Skills or knowledge with high real-world utility
+            - "Aha moments" where understanding clicks into place
+            - Principles that apply across multiple contexts
+
+            EXCLUDE (0% value):
+            - Introductions, outros, advertisements, plugs
+            - Meandering stories without clear takeaways
+            - Repetitive explanations of the same point
+            - Off-topic tangents or side conversations
+            - Filler words, social niceties, transitional chat
+            - "We'll get to that later" promises without delivery
+
+            ===== SEGMENT REQUIREMENTS =====
+            BOUNDARIES:
+            - Topic changes (when conversation shifts to new subject)
+            - Semantic completeness (full thought/argument/explanation)
+            - Self-contained (can be understood without prior context)
+
+            OUTPUT FORMAT:
+            Provide a structured summary that:
+            1. Identifies the highest-value insights (the 20%)
+            2. Explains why each insight matters
+            3. Includes specific examples or evidence when available
+            4. Organizes content by major themes or topics
+            5. Highlights actionable takeaways
+
+            Focus on extracting maximum learning value. Be selective - quality over quantity.
 
             Transcript:
             {text}""",
-                        'brief': """Provide a brief 2-3 paragraph summary of this podcast transcript, focusing on the main points.
+                        'brief': """You are an expert podcast curator for PodVibe.fm's LEARNING MODE. Extract the 20% of this podcast that delivers 80% of the learning value.
+
+            Focus on:
+            - Novel frameworks or mental models
+            - Counter-intuitive insights
+            - Actionable steps with clear guidance
+            - Evidence-based conclusions
+            - Practical examples or case studies
+            - High-utility skills or knowledge
+
+            Exclude: introductions, outros, ads, filler, repetitive content, off-topic tangents.
+
+            Provide a concise 2-3 paragraph summary focusing on the highest-value educational content.
 
             Transcript:
             {text}""",
-                        'key_points': """Extract the key points from this podcast transcript as a bulleted list. Focus on the most important insights and actionable takeaways.
+                        'key_points': """You are an expert podcast curator for PodVibe.fm's LEARNING MODE. Extract the 20% of this podcast that delivers 80% of the learning value.
+
+            Focus on extracting key points that are:
+            - Novel frameworks or mental models
+            - Counter-intuitive insights
+            - Actionable with clear guidance
+            - Evidence-based
+            - High-utility skills or knowledge
+
+            Exclude: introductions, outros, ads, filler, repetitive content, off-topic tangents.
+
+            Extract the key points as a bulleted list. Focus on the most important insights and actionable takeaways that provide maximum learning value.
 
             Transcript:
             {text}"""
